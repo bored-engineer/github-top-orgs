@@ -142,7 +142,7 @@ func main() {
 	defer writer.Flush()
 	for day := startTime; !day.After(endTime); day = day.AddDate(0, 0, 1) {
 		for hour := 0; hour < 24; hour++ {
-			query := fmt.Sprintf("type:org %s created:%sT%02d:00:00Z..%sT%02d:59:59Z", *query, day.Format("2006-01-02"), hour, day.Format("2006-01-02"), hour)
+			query := fmt.Sprintf("type:org %s created:%sT%02d:00:00Z..%sT%02d:59:59Z", *query, day.Format("2006-01-02"), hour, day.Format("2006-01-02"), hour+1)
 			orgs, err := Search(ctx, client, query, rl)
 			if err != nil {
 				log.Fatalf("Search failed: %v", err)
