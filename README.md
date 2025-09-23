@@ -1,2 +1,2 @@
 # github-top-orgs
-Lists the top GitHub organizations using the GraphQL API
+Lists all GitHub organizations with more than 1 repository using the GraphQL API, updated daily: [latest release](https://github.com/bored-engineer/github-top-orgs/releases/latest).
