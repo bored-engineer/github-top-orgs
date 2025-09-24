@@ -78,23 +78,23 @@ jobs:
           GH_APP_PRIVATE_KEY_19: ${{ secrets.GH_APP_PRIVATE_KEY_19 }}
           GH_APP_PRIVATE_KEY_20: ${{ secrets.GH_APP_PRIVATE_KEY_20 }}
         run: |
-          seq 2008 2025 | parallel --line-buffer --jobs=20 'GH_APP_ID=$GH_APP_ID_{%} GH_APP_INSTALLATION_ID=$GH_APP_INSTALLATION_ID_{%} GH_APP_PRIVATE_KEY=$GH_APP_PRIVATE_KEY_{%} ./github-top-orgs --query "repos:>=1 sort:created" --start "{}-01-01" --end "{}-12-31" > {}.csv'
+          seq 2008 2025 | parallel --line-buffer --jobs=20 'GH_APP_ID=$GH_APP_ID_{%} GH_APP_INSTALLATION_ID=$GH_APP_INSTALLATION_ID_{%} GH_APP_PRIVATE_KEY=$GH_APP_PRIVATE_KEY_{%} ./github-top-orgs --query "repos:>=1 sort:created" --start "{}-01-01" --end "{}-12-31" > part-{}.csv'
+      - name: Generate Tag
+        run: |
+          echo "TAG_NAME=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
       - name: Merge
         run: |
-          echo "login,name,id,node_id,description,email,verified,location,website_url,created_at,updated_at,archived_at" > all.csv
-          sort --field-separator=, --numeric-sort --reverse --key=3 20*.csv >> all.csv
+          echo "login,name,id,node_id,description,email,verified,location,website_url,created_at,updated_at,archived_at" > "$TAG_NAME-orgs.csv"
+          cat part-20*.csv >> "$TAG_NAME-orgs.csv"
       - name: Compress
         run: |
-          zstd -19 all.csv
+          zstd -19 "$TAG_NAME-orgs.csv"
       - name: Commit
         run: |
           git config --global user.name "Luke Young"
           git config --global user.email "541842+bored-engineer@users.noreply.github.com"
           git commit --allow-empty -m "Update: $(date) -> Action URL: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           git push
-      - name: Generate Tag
-        run: |
-          echo "TAG_NAME=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
       - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -112,4 +112,4 @@ jobs:
           gh release upload \
             --repo "$GITHUB_REPOSITORY" \
             "$TAG_NAME" \
-            all.csv.zst
+            "$TAG_NAME-orgs.csv.zst"
